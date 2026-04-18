@@ -5,7 +5,7 @@ export class CreateProductDto{
 	@IsString()
 	@IsNotEmpty()
 	@MinLength(3,{message:'Too short!'})
-	@Transform(({value})=>{value.trim()})
+	@Transform(({value})=>value.trim())
 	name:string;
 	@IsOptional()
 	@IsString()

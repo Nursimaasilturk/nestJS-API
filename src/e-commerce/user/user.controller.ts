@@ -30,5 +30,9 @@ export class UserController {
   login(@Body() dto:LoginUserDto){
     return this.userService.login(dto);
   }
+  @Post(':id')
+  delete(@Param('id') id:string){
+    return this.userService.deleteUserById(+id);
+  }
 
 }

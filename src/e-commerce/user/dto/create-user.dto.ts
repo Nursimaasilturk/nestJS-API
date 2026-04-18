@@ -12,7 +12,7 @@ export class CreateUserDto{
 	@IsNotEmpty()
 	@IsString()
 	//Transform transformerı name değerindeki boşlukları siler. Name de '  ' bu değeri girdiğimizde bunun hata olarak gözükmesini sağlar.
-	@Transform(({value})=>{value.trim()})
+	@Transform(({value})=> value.trim())
 	name:string;
 	@MinLength(8,{
 		message:'Password is too short.Powerful password should be $constraint1 characters, but actual is $value'
