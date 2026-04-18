@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { ProductOutOfStockException } from 'src/common/exceptions/product-out-of-stock.exception';
+import { UserNotFoundException } from 'src/common/exceptions/user-not-found.exception';
+import { InvalidQuantityException } from 'src/common/exceptions/invalid-quantity.exception';
+import { ProductNotFoundException } from 'src/common/exceptions/product-not-found.exception';
+import { OrderNotFoundException } from 'src/common/exceptions/order-not-found.exception';
 
 @Injectable()
 export class OrderService {
@@ -12,16 +17,16 @@ export class OrderService {
 				id: data.userId
 			}
 		})
-		if(!user) throw new NotFoundException('user is not found')
+		if(!user) throw new UserNotFoundException();
 		for (const item of data.items){
 			const product = await this.prisma.product.findUnique({
 				where:{
 					id:item.productId,
 				}
 			})
-			if(!product) throw new NotFoundException(`Product ${item.productId} is not found`);
-			if(item.quantity < 0) throw new BadRequestException('Quantity must be greater than zero');
-			if(product.stock < item.quantity) throw new BadRequestException(`Not enough stock for product ${product.name}`)
+			if(!product) throw new ProductNotFoundException();
+			if(item.quantity < 0) throw new InvalidQuantityException();
+			if(product.stock < item.quantity) throw new ProductOutOfStockException();
 		}
 		return this.prisma.order.create({
 		  data: {
@@ -46,7 +51,7 @@ export class OrderService {
 				id
 			}
 		});
-		if(!order) throw new NotFoundException('order not found');
+		if(!order) throw new OrderNotFoundException();
 		return this.prisma.order.findUnique({
 			where:{
 				id
@@ -67,7 +72,7 @@ export class OrderService {
 				id
 			}
 		});
-		if(!order) throw new NotFoundException('order not found');
+		if(!order) throw new OrderNotFoundException();
 		return this.prisma.order.delete({where:{id}})
 	}
 }

@@ -1,8 +1,11 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UserNotFoundException } from 'src/common/exceptions/user-not-found.exception';
+import { UserAlreadyExistsException } from 'src/common/exceptions/user-already-exists.exception';
+import { InvalidCredentialsException } from 'src/common/exceptions/invalid-credentials.exception';
 
 @Injectable()
 export class UserService {
@@ -11,7 +14,7 @@ export class UserService {
 
 	async createUser(data:CreateUserDto){
 		const user = await this.prisma.user.findUnique({where:{email:data.email}})
-		if(user) throw new ConflictException('user already exists')
+		if(user) throw new UserAlreadyExistsException()
 		return await this.prisma.user.create({data:data})
 	}
 	getAllUsers(){
@@ -24,7 +27,7 @@ export class UserService {
 			}
 		});
 		if(!user){
-			throw new NotFoundException('User not found')
+			throw new UserNotFoundException();
 		}
 		return user;
 	}
@@ -34,7 +37,7 @@ export class UserService {
 				id
 			}
 		});
-		if(!user) throw new NotFoundException('User not found')
+		if(!user) throw new UserNotFoundException();
 		return await this.prisma.user.delete({where:{id}});	
 	}
 	updateUser(id:number,data:UpdateUserDto){
@@ -52,10 +55,10 @@ export class UserService {
 			}
 		});
 		if(!user){
-			throw new UnauthorizedException('Invalid credentials!');
+			throw new InvalidCredentialsException();
 		}
 		if(user.password !== data.password){
-			throw new UnauthorizedException('Invalid credentials!');
+			throw new InvalidCredentialsException();
 		}
 		const {password,...result} = user;
 		return result; 
